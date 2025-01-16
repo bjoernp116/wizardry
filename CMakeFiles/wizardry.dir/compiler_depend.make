@@ -223,6 +223,7 @@ CMakeFiles/wizardry.dir/src/main.c.o: src/main.c \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
   src/macros.h \
   src/font.c \
+  src/char_map.h \
   /usr/include/x86_64-linux-gnu/sys/resource.h \
   /usr/include/x86_64-linux-gnu/bits/resource.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_rusage.h
@@ -231,6 +232,8 @@ CMakeFiles/wizardry.dir/src/main.c.o: src/main.c \
 /usr/include/x86_64-linux-gnu/bits/types/struct_rusage.h:
 
 /usr/include/x86_64-linux-gnu/sys/resource.h:
+
+src/char_map.h:
 
 /usr/include/SDL2/SDL_misc.h:
 

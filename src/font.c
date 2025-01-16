@@ -1,83 +1,113 @@
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include "macros.h"
+#include "char_map.h"
 
-#define MAP_SIZE_X 64
-#define MAP_SIZE_Y 64
-
-#define FONT_SIZE_X 8
-#define FONT_SIZE_Y 8
 
 typedef struct {
-    u32 pixels[MAP_SIZE_X * MAP_SIZE_Y];
-    SDL_Texture* map[FONT_SIZE_X * FONT_SIZE_Y];
+    u32 char_height;
+    u32 char_width;
+
+    u32 char_spacing;
+    u32 line_spacing;
+
+    u32 color;
+
+    SDL_PixelFormat pixel_format;
+    SDL_Texture* char_sheet;
 } Font;
 
-u32 get_pixel(const SDL_Surface* surface, const u8 x, const u8 y) {
-    const u8 bpp = surface->format->BytesPerPixel;
+Font load_font(SDL_Renderer* renderer, char* path, u32 h, u32 w){
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    ASSERT(surface, "Cant create surface from BMP: %s\n", SDL_GetError());
+    SDL_Texture* texture = SDL_CreateTexture(renderer, surface->format->format, SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h);
+    ASSERT(texture, "Cant create texture from surface: %s\n", SDL_GetError());
 
-    u8* pixel = (u8*) surface->pixels + y * surface->pitch + x * bpp;
-    u32 pixel_data = *(u32*) pixel;
+    ASSERT(SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch) == 0, "Failed to update texture: %s\n", SDL_GetError());
 
-    SDL_Color color = { 0x00, 0x00, 0x00, 0x00 };
-    SDL_GetRGBA(pixel_data, surface->format, &color.r, &color.g, &color.b, &color.a);
-    u32 out = (color.r << 8*3) + (color.g << 8*2) + (color.b << 8) + color.a;
 
-    return out;
-}
-
-Font load_font(char* path) {
     Font font;
+    font.char_sheet = texture;
+    font.char_height = h;
+    font.char_width = w;
+    font.pixel_format = *surface->format;
 
-    printf("Loading Font!\n");
-
-    SDL_Surface* bmp = SDL_LoadBMP(path);
-    ASSERT(bmp, "Cant load font!\n%s", SDL_GetError());
-
-    for(u32 x = 0; x < MAP_SIZE_X; x++) {
-        for(u32 y = 0; y < MAP_SIZE_Y; y++) {
-            //printf("(%d, %d)\n", x, y);
-            u32 pixel = get_pixel(bmp, x, y);
-            font.pixels[y * MAP_SIZE_X + x] = pixel;
-        }
-    }
-
-    for(int i = 0; i < MAP_SIZE_X * MAP_SIZE_Y; i++) {
-        printf("PXL: %u\n", font.pixels[i]);
-    }
-
-    printf("done\n");
+    font.char_spacing = 0;
+    font.line_spacing = 0;
     return font;
 }
 
-void split_font(Font* font, SDL_Renderer* renderer){
-    for(int i = 0; i < 64; i++) {
-        u32 xc = i % FONT_SIZE_X;
-        u32 yc = i / FONT_SIZE_X;
+void set_color (Font* font, u8 r, u8 g, u8 b, u8 a) {
+    font->color = SDL_MapRGBA(&font->pixel_format, r, g, b, a);
+}
 
-        u32 pixels[64];
+void recolor_font(Font* font){
+    u32* pixels = NULL;
+    int pitch = 0;
+    int w, h;
+    u32 format;
+    SDL_QueryTexture(font->char_sheet, &format, NULL, &w, &h);
 
-        for(int x = 0; x < 8; x++) {
-            for(int y = 0; y < 8; y++) {
-                pixels[y * 8 + x] = font->pixels[(y + FONT_SIZE_Y * yc) * FONT_SIZE_X + (x + FONT_SIZE_X * xc)];
-            }
+    if (SDL_LockTexture(font->char_sheet, NULL, (void**)pixels, &pitch)) {
+        ASSERT(0, "Font Texture is locked! %s\n", SDL_GetError());
+    }
+    SDL_PixelFormat pf;
+    pf.format = format;
+    u32 opaque = SDL_MapRGBA(&pf, 0, 0, 0, 255);
+
+    for (int i = 0; i < h * w; i++) {
+        if (pixels[i] != opaque) {
+            pixels[i] = font->color;
         }
-        SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 8, 8);
-        SDL_UpdateTexture(texture, NULL, pixels, 0);
-        font->map[i] = texture;
-
     }
 }
 
-void render_char(Font font, SDL_Renderer* renderer, u32 index, u32 x, u32 y){
-    SDL_Rect texture_rect;
-    texture_rect.x = x;
-    texture_rect.y = y;
-    texture_rect.h = 8;
-    texture_rect.w = 8;
 
-    SDL_RenderCopy(renderer, font.map[index], NULL, &texture_rect);
+void render_char(SDL_Renderer* renderer, Font font, u32 x, u32 y, unsigned char c, f32 font_size) {
+    SDL_Rect dest;
+    dest.x = x;
+    dest.y = y;
+    dest.w = font.char_width * font_size;
+    dest.h = font.char_height * font_size;
+
+    u32 index = char_to_index(c);
+
+    SDL_Rect src;
+    src.x = (index % font.char_width) * font.char_width;
+    src.y = (index / font.char_width) * font.char_height;
+    src.w = font.char_width;
+    src.h = font.char_height;
+
+    SDL_RenderCopy(renderer, font.char_sheet, &src, &dest);
 }
+
+void render_string(SDL_Renderer* renderer, Font font, u32 x, u32 y, char* s, f32 font_size) {
+    char* t;
+    int i = 0;
+    u32 ax = x;
+    u32 ay = y;
+    for(t = s; *t != '\0'; t++) {
+        if (*t == '\n') {
+            ax = x;
+            ay += font.char_height * font_size + font.line_spacing;
+            continue;
+        }
+        render_char(
+                renderer,
+                font,
+                ax,
+                ay, // + (i * font.char_height),
+                *t,
+                font_size
+                );
+        i++;
+        ax += font.char_width * font_size + font.char_spacing;
+    }
+}
+
+
+

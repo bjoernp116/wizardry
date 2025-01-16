@@ -50,13 +50,10 @@ int main() {
             SCREEN_HEIGHT);
     ASSERT(state.renderer, "SDL renderer could not initialize %s\n", SDL_GetError());
 
-    Font font = load_font("font.bmp");
-    split_font(&font, state.renderer);
-    printf("font loaded\n");
-
-    SDL_Surface* image = SDL_LoadBMP("font.bmp");
-    SDL_Texture* image_tex = SDL_CreateTextureFromSurface(state.renderer, image);
-
+    Font font = load_font(state.renderer, "font.bmp", 8, 8);
+    font.line_spacing = 10;
+    set_color(&font, 255, 0, 0, 0);
+    recolor_font(&font);
 
 
     while (!state.quit) {
@@ -80,8 +77,8 @@ int main() {
                 NULL,
                 0.0,
                 NULL, SDL_FLIP_VERTICAL);*/
+        render_string(state.renderer, font, 10, 10, "THE QUICK BROWN FOX \nJUMPES OVER THE \nLAZY DOG!?_-#", 4);
 
-        SDL_RenderCopy(state.renderer, image_tex, NULL, NULL);
 
         SDL_RenderPresent(state.renderer);
     }
