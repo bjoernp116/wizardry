@@ -1,0 +1,3 @@
+/home/bjoernp/cpp/wizardry/CMakeFiles/wizardry.dir
+/home/bjoernp/cpp/wizardry/CMakeFiles/edit_cache.dir
+/home/bjoernp/cpp/wizardry/CMakeFiles/rebuild_cache.dir

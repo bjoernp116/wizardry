@@ -1,0 +1,1 @@
+/usr/bin/cc -rdynamic CMakeFiles/engine.dir/src/main.c.o -o engine  -L/usr/lib/x86_64-linux-gnu  -lSDL2 -lm 
