@@ -34,10 +34,14 @@ Font load_font(SDL_Renderer* renderer, char* path, u32 h, u32 w){
     font.char_sheet = texture;
     font.char_height = h;
     font.char_width = w;
-    font.pixel_format = surface->format;
+
+    font.pixel_format = SDL_AllocFormat(surface->format->format);
 
     font.char_spacing = 0;
     font.line_spacing = 0;
+
+
+    SDL_FreeSurface(surface);
     return font;
 }
 
@@ -45,23 +49,45 @@ void set_color (Font* font, u8 r, u8 g, u8 b, u8 a) {
     font->color = SDL_MapRGBA(font->pixel_format, r, g, b, a);
 }
 
+void assert_all(Font* font) {
+    ASSERT(&font->char_height != NULL, "Char Height not initialized!");
+    ASSERT(&font->char_width != NULL, "Char Width not initialized!");
+    ASSERT(&font->char_sheet != NULL, "Char texture not initialized!");
+    ASSERT(&font->char_spacing != NULL, "Char spacing not initialized!");
+    ASSERT(&font->line_spacing != NULL, "Line spacing not initialized!");
+    ASSERT(&font->color != NULL, "Color not initialized!");
+    ASSERT(&font->pixel_format != NULL, "Pixelformat not initialized!");
+}
+
 void recolor_font(Font* font){
-    u32* pixels = NULL;
+    assert_all(font);
+    void* raw_pixels = NULL;
     int pitch = 0;
     int w, h;
     SDL_QueryTexture(font->char_sheet, NULL, NULL, &w, &h);
 
-    if (SDL_LockTexture(font->char_sheet, NULL, (void**)&pixels, &pitch)) {
-        ASSERT(0, "Font Texture is locked! %s\n", SDL_GetError());
+    if (SDL_LockTexture(font->char_sheet, NULL, (void**)&raw_pixels, &pitch)) {
+        ASSERT(NULL, "Font Texture is locked! %s\n", SDL_GetError());
     }
-    ASSERT(&font->pixel_format, "Pixelformat unitialized!\n");
-    for (int i = 0; i < h * w; i++) {
-        u8 alpha = 0;
-        SDL_GetRGBA(pixels[i], font->pixel_format, NULL, NULL, NULL, &alpha);
-        if (alpha != 0) {
-            pixels[i] = font->color;
+    ASSERT(font->pixel_format, "Pixelformat unitialized!\n");
+
+    u32* pixels = (u32*)raw_pixels;
+    u32 pixels_per_row = pitch / sizeof(u32);
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            int i = y * pixels_per_row + x;
+            ASSERT(pixels[i], "Pixel out of bounds!\n");
+
+            u8 alpha = 0;
+            SDL_GetRGBA(pixels[i], font->pixel_format, NULL, NULL, NULL, &alpha);
+
+            if (alpha != 0) {
+                pixels[i] = font->color;
+            }
         }
     }
+
+    SDL_UnlockTexture(font->char_sheet);
 }
 
 
@@ -108,4 +134,14 @@ void render_string(SDL_Renderer* renderer, Font font, u32 x, u32 y, char* s, f32
 }
 
 
+void free_font(Font* font){
+    if (font->char_sheet) {
+        SDL_DestroyTexture(font->char_sheet);
+        font->char_sheet = NULL;
+    }
+    if (font->pixel_format) {
+        SDL_FreeFormat(font->pixel_format);
+        font->pixel_format = NULL;
+    }
+}
 
