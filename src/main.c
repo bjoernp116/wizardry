@@ -52,7 +52,7 @@ int main() {
 
     Font font = load_font(state.renderer, "font.bmp", 8, 8);
     font.line_spacing = 10;
-    set_color(&font, 255, 0, 0, 0);
+    set_color(&font, 255, 0, 0, 255);
     recolor_font(&font);
 
 

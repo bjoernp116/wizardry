@@ -17,7 +17,7 @@ typedef struct {
 
     u32 color;
 
-    SDL_PixelFormat pixel_format;
+    SDL_PixelFormat* pixel_format;
     SDL_Texture* char_sheet;
 } Font;
 
@@ -34,7 +34,7 @@ Font load_font(SDL_Renderer* renderer, char* path, u32 h, u32 w){
     font.char_sheet = texture;
     font.char_height = h;
     font.char_width = w;
-    font.pixel_format = *surface->format;
+    font.pixel_format = surface->format;
 
     font.char_spacing = 0;
     font.line_spacing = 0;
@@ -42,25 +42,23 @@ Font load_font(SDL_Renderer* renderer, char* path, u32 h, u32 w){
 }
 
 void set_color (Font* font, u8 r, u8 g, u8 b, u8 a) {
-    font->color = SDL_MapRGBA(&font->pixel_format, r, g, b, a);
+    font->color = SDL_MapRGBA(font->pixel_format, r, g, b, a);
 }
 
 void recolor_font(Font* font){
     u32* pixels = NULL;
     int pitch = 0;
     int w, h;
-    u32 format;
-    SDL_QueryTexture(font->char_sheet, &format, NULL, &w, &h);
+    SDL_QueryTexture(font->char_sheet, NULL, NULL, &w, &h);
 
-    if (SDL_LockTexture(font->char_sheet, NULL, (void**)pixels, &pitch)) {
+    if (SDL_LockTexture(font->char_sheet, NULL, (void**)&pixels, &pitch)) {
         ASSERT(0, "Font Texture is locked! %s\n", SDL_GetError());
     }
-    SDL_PixelFormat pf;
-    pf.format = format;
-    u32 opaque = SDL_MapRGBA(&pf, 0, 0, 0, 255);
-
+    ASSERT(&font->pixel_format, "Pixelformat unitialized!\n");
     for (int i = 0; i < h * w; i++) {
-        if (pixels[i] != opaque) {
+        u8 alpha = 0;
+        SDL_GetRGBA(pixels[i], font->pixel_format, NULL, NULL, NULL, &alpha);
+        if (alpha != 0) {
             pixels[i] = font->color;
         }
     }
