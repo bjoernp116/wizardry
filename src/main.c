@@ -60,8 +60,7 @@ int main() {
     Sprite sprite = create_sprite(state.renderer, "troll.bmp", 3, 4);
     sprite.pos_x = 10;
     sprite.pos_y = 10;
-    u32 framelist[5] = { 0, 1, 2, 3, 4 };
-    Animation animation = create_animation(&sprite, &framelist[0], 500);
+    Animation animation = create_animation(&sprite, 1, 50);
 
 
 

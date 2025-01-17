@@ -61,7 +61,7 @@ void render_sprite(SDL_Renderer* renderer, Sprite* sprite) {
     src.h = sprite->frame_height;
     src.w = sprite->frame_width;
     src.y = sprite->frame_height * (sprite->frame / sprite->hframes);
-    src.x = sprite->frame_width * (sprite->frame % sprite->vframes);
+    src.x = sprite->frame_width * (sprite->frame % sprite->hframes);
     printf("Frame Coords: (%d, %d)", src.x / sprite->frame_width, src.y / sprite->frame_height);
 
     SDL_Rect dest;
