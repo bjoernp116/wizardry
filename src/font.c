@@ -61,27 +61,35 @@ void assert_all(Font* font) {
 
 void recolor_font(Font* font){
     assert_all(font);
+
     void* raw_pixels = NULL;
     int pitch = 0;
     int w, h;
+
     SDL_QueryTexture(font->char_sheet, NULL, NULL, &w, &h);
 
-    if (SDL_LockTexture(font->char_sheet, NULL, (void**)&raw_pixels, &pitch)) {
+    printf("Texture dimensions: %dx%d, Pitch: %d bytes\n", w, h, pitch);
+    printf("Texture format: 0x%x\n", font->pixel_format->format);
+
+    if (SDL_LockTexture(font->char_sheet, NULL, &raw_pixels, &pitch)) {
         ASSERT(NULL, "Font Texture is locked! %s\n", SDL_GetError());
     }
+
+    ASSERT(raw_pixels, "Raw Pixel data is NULL!\n");
     ASSERT(font->pixel_format, "Pixelformat unitialized!\n");
 
     u32* pixels = (u32*)raw_pixels;
     u32 pixels_per_row = pitch / sizeof(u32);
+
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             int i = y * pixels_per_row + x;
-            ASSERT(pixels[i], "Pixel out of bounds!\n");
+            u8 r, g, b, a;
+            //printf("Pixel %d: 0x%X\n", i, pixels[i]);
 
-            u8 alpha = 0;
-            SDL_GetRGBA(pixels[i], font->pixel_format, NULL, NULL, NULL, &alpha);
+            SDL_GetRGBA(pixels[i], font->pixel_format, &r, &g, &b, &a);
 
-            if (alpha != 0) {
+            if (a != 0) {
                 pixels[i] = font->color;
             }
         }
@@ -91,33 +99,33 @@ void recolor_font(Font* font){
 }
 
 
-void render_char(SDL_Renderer* renderer, Font font, u32 x, u32 y, unsigned char c, f32 font_size) {
+void render_char(SDL_Renderer* renderer, Font* font, u32 x, u32 y, unsigned char c, f32 font_size) {
     SDL_Rect dest;
     dest.x = x;
     dest.y = y;
-    dest.w = font.char_width * font_size;
-    dest.h = font.char_height * font_size;
+    dest.w = font->char_width * font_size;
+    dest.h = font->char_height * font_size;
 
     u32 index = char_to_index(c);
 
     SDL_Rect src;
-    src.x = (index % font.char_width) * font.char_width;
-    src.y = (index / font.char_width) * font.char_height;
-    src.w = font.char_width;
-    src.h = font.char_height;
+    src.x = (index % font->char_width) * font->char_width;
+    src.y = (index / font->char_width) * font->char_height;
+    src.w = font->char_width;
+    src.h = font->char_height;
 
-    SDL_RenderCopy(renderer, font.char_sheet, &src, &dest);
+    SDL_RenderCopy(renderer, font->char_sheet, &src, &dest);
 }
 
-void render_string(SDL_Renderer* renderer, Font font, u32 x, u32 y, char* s, f32 font_size) {
-    char* t;
+void render_string(SDL_Renderer* renderer, Font* font, u32 x, u32 y, unsigned char* s, f32 font_size) {
+    unsigned char* t;
     int i = 0;
     u32 ax = x;
     u32 ay = y;
     for(t = s; *t != '\0'; t++) {
         if (*t == '\n') {
             ax = x;
-            ay += font.char_height * font_size + font.line_spacing;
+            ay += font->char_height * font_size + font->line_spacing;
             continue;
         }
         render_char(
@@ -129,7 +137,7 @@ void render_string(SDL_Renderer* renderer, Font font, u32 x, u32 y, char* s, f32
                 font_size
                 );
         i++;
-        ax += font.char_width * font_size + font.char_spacing;
+        ax += font->char_width * font_size + font->char_spacing;
     }
 }
 

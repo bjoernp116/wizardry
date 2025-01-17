@@ -214,6 +214,7 @@ CMakeFiles/wizardry.dir/src/main.c.o: src/main.c \
   /usr/include/SDL2/SDL_misc.h \
   /usr/include/SDL2/SDL_error.h \
   /usr/include/SDL2/SDL_events.h \
+  /usr/include/SDL2/SDL_keycode.h \
   /usr/include/SDL2/SDL_pixels.h \
   /usr/include/SDL2/SDL_rect.h \
   /usr/include/SDL2/SDL_render.h \
@@ -224,6 +225,8 @@ CMakeFiles/wizardry.dir/src/main.c.o: src/main.c \
   src/macros.h \
   src/font.c \
   src/char_map.h \
+  src/sprite.h \
+  src/animation.c \
   /usr/include/x86_64-linux-gnu/sys/resource.h \
   /usr/include/x86_64-linux-gnu/bits/resource.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_rusage.h
@@ -339,6 +342,8 @@ src/font.c:
 
 /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h:
 
+src/sprite.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/11/include/f16cintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h:
@@ -376,6 +381,8 @@ src/font.c:
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
 
 /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h:
+
+src/animation.c:
 
 /usr/include/x86_64-linux-gnu/bits/types/time_t.h:
 

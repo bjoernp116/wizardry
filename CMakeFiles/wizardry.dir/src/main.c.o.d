@@ -175,13 +175,16 @@ CMakeFiles/wizardry.dir/src/main.c.o: \
  /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_version.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
  /usr/include/SDL2/SDL_error.h /usr/include/SDL2/SDL_events.h \
- /usr/include/SDL2/SDL_pixels.h /usr/include/SDL2/SDL_rect.h \
- /usr/include/SDL2/SDL_render.h /usr/include/SDL2/SDL_surface.h \
- /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_video.h \
+ /usr/include/SDL2/SDL_keycode.h /usr/include/SDL2/SDL_pixels.h \
+ /usr/include/SDL2/SDL_rect.h /usr/include/SDL2/SDL_render.h \
+ /usr/include/SDL2/SDL_surface.h /usr/include/SDL2/SDL_timer.h \
+ /usr/include/SDL2/SDL_video.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
  /home/bjoernp/cpp/wizardry/src/macros.h \
  /home/bjoernp/cpp/wizardry/src/font.c \
  /home/bjoernp/cpp/wizardry/src/char_map.h \
+ /home/bjoernp/cpp/wizardry/src/sprite.h \
+ /home/bjoernp/cpp/wizardry/src/animation.c \
  /usr/include/x86_64-linux-gnu/sys/resource.h \
  /usr/include/x86_64-linux-gnu/bits/resource.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_rusage.h
